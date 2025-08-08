@@ -1,4 +1,4 @@
-export const extractFormValues = (formData) => {
+export const extractFormValues = formData => {
   const data = {};
   formData.forEach((value, key) => {
     if (!(value instanceof File)) {

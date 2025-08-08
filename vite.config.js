@@ -19,6 +19,11 @@ export default defineConfig({
         target: 'https://htsanyojanuat.mpcz.in:8088',
         changeOrigin: true,
         secure: false,
+      },
+      '/htngb_backend': {
+        target: 'https://uathtngb.mpcz.in:8888',
+        changeOrigin: true,
+        secure: false,
       }
     }
   },

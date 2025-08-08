@@ -1,36 +1,34 @@
-
-export const verifyOtp = async (mobileNo,otp) => {
+export const verifyOtp = async (mobileNo, otp) => {
   try {
     let data = {
-        "source": "HT SANYOJAN PORTAL",
-        "mobileNo" :mobileNo,
-        "otp" : otp
-        }
+      source: 'HT SANYOJAN PORTAL',
+      mobileNo: mobileNo,
+      otp: otp,
+    };
 
     const response = await fetch(
       `https://resourceutils.mpcz.in:8888/MPCZ_OTP/api/otp/verifyOtpAll`,
       {
-        method: "POST",
+        method: 'POST',
         headers: {
-          "Content-Type": "application/json",
+          'Content-Type': 'application/json',
         },
         body: JSON.stringify(data),
       }
     );
 
     if (response.ok) {
-      console.log("OTP Sccessfully Matched")
+      console.log('OTP Sccessfully Matched');
       return { success: true };
     } else {
-      console.error("connote Matched otp");
-      return { success: false, error: "OTP send failed" };
+      console.error('connote Matched otp');
+      return { success: false, error: 'OTP send failed' };
     }
   } catch (error) {
-    console.error("Error sending OTP:", error);
+    console.error('Error sending OTP:', error);
     return { success: false, error };
   }
-}
-
+};
 
 // const handleOtpSend = async (mobile_number, otpSendMsg) => {
 //     const result = await sendOtp(mobile_number);

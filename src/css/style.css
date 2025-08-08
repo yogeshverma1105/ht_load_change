@@ -1,11 +1,11 @@
-h1{
-    font-size: 50px;
-    text-align: center;
-    color: white;
+h1 {
+  font-size: 50px;
+  text-align: center;
+  color: white;
 }
-.active-link{
-    background-color: rgb(199, 199, 163);
-    padding: 19px;
+.active-link {
+  background-color: rgb(199, 199, 163);
+  padding: 19px;
 }
 input:disabled {
   background-color: #f3f4f6;

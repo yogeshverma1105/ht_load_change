@@ -29,17 +29,19 @@ export default function Banners() {
       </div>
       <div className="flex flex-wrap items-center gap-x-4 gap-y-2">
         <p className="text-sm/6 text-gray-900">
-          <strong className="font-semibold">Developed and Managed by : IT CELL, MPMKVVCL BHOPAL</strong>
+          <strong className="font-semibold">
+            Developed and Managed by : IT CELL, MPMKVVCL BHOPAL
+          </strong>
           <svg viewBox="0 0 2 2" aria-hidden="true" className="mx-2 inline size-0.5 fill-current">
             <circle r={1} cx={1} cy={1} />
           </svg>
-         म.प्र.म.क्षे.वि.वि.कं.लि.,भोपाल (<b> उच्चदाब संयोजन पोर्टल </b>)
+          म.प्र.म.क्षे.वि.वि.कं.लि.,भोपाल (<b> उच्चदाब संयोजन पोर्टल </b>)
         </p>
         <a
           href="#"
           className="flex-none rounded-full bg-gray-900 px-3.5 py-1 text-sm font-semibold text-white shadow-xs hover:bg-gray-700 focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-gray-900"
         >
-         Helpline : 0755-2551222 / 1912<span aria-hidden="true">&rarr;</span>
+          Helpline : 0755-2551222 / 1912<span aria-hidden="true">&rarr;</span>
         </a>
       </div>
       <div className="flex flex-1 justify-end">
@@ -49,5 +51,5 @@ export default function Banners() {
         </button>
       </div>
     </div>
-  )
+  );
 }

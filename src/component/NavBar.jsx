@@ -1,8 +1,8 @@
-import React, { Children } from 'react'
-import { NavLink } from "react-router-dom"
-'use client'
+import React, { Children } from 'react';
+import { NavLink } from 'react-router-dom';
+('use client');
 
-import { useState } from 'react'
+import { useState } from 'react';
 import {
   Dialog,
   DialogPanel,
@@ -13,7 +13,7 @@ import {
   PopoverButton,
   PopoverGroup,
   PopoverPanel,
-} from '@headlessui/react'
+} from '@headlessui/react';
 import {
   ArrowPathIcon,
   Bars3Icon,
@@ -22,8 +22,8 @@ import {
   FingerPrintIcon,
   SquaresPlusIcon,
   XMarkIcon,
-} from '@heroicons/react/24/outline'
-import { ChevronDownIcon, PhoneIcon, PlayCircleIcon } from '@heroicons/react/20/solid'
+} from '@heroicons/react/24/outline';
+import { ChevronDownIcon, PhoneIcon, PlayCircleIcon } from '@heroicons/react/20/solid';
 
 // const menu=[
 //         {label:"Home",path:"/"},
@@ -36,23 +36,38 @@ import { ChevronDownIcon, PhoneIcon, PlayCircleIcon } from '@heroicons/react/20/
 //         ]},
 //         {label:"Applicant Login",path:"/applicant_login"},
 //         {label:"Department Login",path:"/Department_login"},
-        
+
 //     ]
 
 const products = [
-  { name: 'Home', description: 'Get a better understanding of your traffic', href: '/', icon: ChartPieIcon },
-  { name: 'Applicant Login', description: 'Speak directly to your customers', href: '/applicant_login', icon: CursorArrowRaysIcon },
-  { name: 'Department Login', description: 'Your customers’ data will be safe and secure', href: '/Department_login', icon: FingerPrintIcon },
-  ]
+  {
+    name: 'Home',
+    description: 'Get a better understanding of your traffic',
+    href: '/',
+    icon: ChartPieIcon,
+  },
+  {
+    name: 'Applicant Login',
+    description: 'Speak directly to your customers',
+    href: '/applicant_login',
+    icon: CursorArrowRaysIcon,
+  },
+  {
+    name: 'Department Login',
+    description: 'Your customers’ data will be safe and secure',
+    href: '/Department_login',
+    icon: FingerPrintIcon,
+  },
+];
 const callsToAction = [
   { name: 'HT New Service Connection(NSC)', href: '/NewServiceConnection', icon: PlayCircleIcon },
-  { name: 'HT Load Change (NSC)', href: '/LoadChange', icon: PhoneIcon },
+  { name: 'HT Load Change (NSC)', href: '/ht-load-change', icon: PhoneIcon },
   { name: 'HT Name Transfer (NSC)', href: '/NameTransfer', icon: PhoneIcon },
   { name: 'HT Green Tariff (NSC)', href: '/GreenTariff', icon: PhoneIcon },
-]
+];
 
 export default function NavBar() {
-  const [mobileMenuOpen, setMobileMenuOpen] = useState(false)
+  const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
 
   return (
     <header className="bg-gray-300 w-full">
@@ -89,13 +104,16 @@ export default function NavBar() {
               className="absolute top-full -left-8 z-10 mt-3 w-screen max-w-md overflow-hidden rounded-3xl bg-white shadow-lg ring-1 ring-gray-900/5 transition data-closed:translate-y-1 data-closed:opacity-0 data-enter:duration-200 data-enter:ease-out data-leave:duration-150 data-leave:ease-in"
             >
               <div className="p-4">
-                {products.map((item ,index) => (
+                {products.map((item, index) => (
                   <div
                     key={item.name}
                     className="group relative flex items-center gap-x-6 rounded-lg p-4 text-sm/6 hover:bg-gray-50"
                   >
                     <div className="flex size-11 flex-none items-center justify-center rounded-lg bg-gray-50 group-hover:bg-white">
-                      <item.icon aria-hidden="true" className="size-6 text-gray-600 group-hover:text-indigo-600" />
+                      <item.icon
+                        aria-hidden="true"
+                        className="size-6 text-gray-600 group-hover:text-indigo-600"
+                      />
                     </div>
                     <div className="flex-auto">
                       <NavLink to={item.href} className="block font-semibold text-gray-900">
@@ -108,7 +126,7 @@ export default function NavBar() {
                 ))}
               </div>
               <div className="grid grid-cols-2 divide-x divide-gray-900/5 bg-gray-50">
-                {callsToAction.map((item) => (
+                {callsToAction.map(item => (
                   <NavLink
                     key={item.name}
                     to={item.href}
@@ -122,9 +140,12 @@ export default function NavBar() {
             </PopoverPanel>
           </Popover>
 
-          <a href="#" className="text-sm/6 font-semibold text-gray-900">
-            Features
-          </a>
+          <NavLink to="department-login" className="text-sm/6 font-semibold text-gray-900">
+            Department Login
+          </NavLink>
+          <NavLink to="applicant-login" className="text-sm/6 font-semibold text-gray-900">
+            Applicant Login
+          </NavLink>
           <a href="#" className="text-sm/6 font-semibold text-gray-900">
             Marketplace
           </a>
@@ -165,10 +186,13 @@ export default function NavBar() {
                 <Disclosure as="div" className="-mx-3">
                   <DisclosureButton className="group flex w-full items-center justify-between rounded-lg py-2 pr-3.5 pl-3 text-base/7 font-semibold text-gray-900 hover:bg-gray-50">
                     Product
-                    <ChevronDownIcon aria-hidden="true" className="size-5 flex-none group-data-open:rotate-180" />
+                    <ChevronDownIcon
+                      aria-hidden="true"
+                      className="size-5 flex-none group-data-open:rotate-180"
+                    />
                   </DisclosureButton>
                   <DisclosurePanel className="mt-2 space-y-2">
-                    {[...products, ...callsToAction].map((item) => (
+                    {[...products, ...callsToAction].map(item => (
                       <DisclosureButton
                         key={item.name}
                         as="a"
@@ -212,6 +236,5 @@ export default function NavBar() {
         </DialogPanel>
       </Dialog>
     </header>
-   
-  )
+  );
 }
