@@ -1,16 +1,44 @@
-import React from 'react';
-const Button = ({ type, name, onChange }) => {
+import React, { useState } from "react";
+
+const Button = ({
+  label = "Click Me",      
+  onClick,                 
+  color = "bg-blue-500",   
+  disabled = false,        
+  processing = false,
+  type="button"    
+}) => {
+  const [isProcessing, setIsProcessing] = useState(false);
+
+  const handleClick = async (e) => {
+    if (disabled || isProcessing) return;
+
+    if (onClick) {
+      setIsProcessing(true); 
+      try {
+        await onClick(e); 
+      } finally {
+        setIsProcessing(false); 
+      }
+    }
+  };
+
   return (
-    <>
-      <button
-        type={type}
-        name={name}
-        onClick={onChange}
-        class="py-2 px-4 ms-2 text-sm font-medium text-gray-900 focus:outline-none bg-blue-700 rounded-lg border border-gray-200 hover:bg-gray-100 hover:text-blue-700 focus:z-10 focus:ring-4 focus:ring-gray-100 dark:focus:ring-gray-700 dark:bg-gray-800 dark:text-gray-400 dark:border-gray-600 dark:hover:text-white dark:hover:bg-gray-700"
-      >
-        {name}
-      </button>
-    </>
+    <div className="relative pt-5">
+    <button
+      type={type}
+      onClick={handleClick}
+      disabled={disabled || isProcessing}
+      className={`
+        px-8 py-2 rounded-lg text-white font-medium
+        ${disabled || isProcessing ? "bg-gray-400 cursor-not-allowed" : color}
+      `}
+    >
+      {isProcessing || processing ? "Processing..." : label}
+    </button>
+</div>
   );
 };
+
 export default Button;
+

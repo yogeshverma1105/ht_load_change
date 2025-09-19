@@ -30,27 +30,41 @@ export const verifyOtp = async (mobileNo, otp) => {
   }
 };
 
-// const handleOtpSend = async (mobile_number, otpSendMsg) => {
-//     const result = await sendOtp(mobile_number);
-//     let sentOtpNum = mobile_number.slice(-4)
-//     if (result.success) {
-//       newErrors.otpStatusMsg = `${otpSendMsg}${sentOtpNum}`;
-//       setError(newErrors);
-//     } else {
-//       newErrors.otpStatusMsg = ` ❌ OTP Send Failed on mobile number ******${sentOtpNum}`;
-//       setError(newErrors);
-//     }
-//   };
-//   const handleOtpVerify = async () => {
-//     const result = await verifyOtp(mobile, otpValue);
-//     if (result.success) {
-//       setIsDisabled(false);
-//       newErrors.otpStatusMsg = `✅ OTP verified successfully!`;
-//       setError(newErrors);
-//       navigate("/PayDetails")
 
-//     } else {
-//       newErrors.otpStatusMsg = `❌ Invalid OTP. Please try again.`;
-//       setError(newErrors);
-//     }
-//   };
+// verifyOtp.js
+export const verifyOtpNew = async (mobileNo, otp) => {
+  try {
+    if (!otp) {
+      return { success: false, error: "Please enter OTP" };
+    }
+
+    const data = {
+      source: "HT SANYOJAN PORTAL",
+      mobileNo,
+      otp,
+    };
+
+    const response = await fetch(
+      `https://resourceutils.mpcz.in:8888/MPCZ_OTP/api/otp/verifyOtpAll`,
+      {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json",
+        },
+        body: JSON.stringify(data),
+      }
+    );
+
+    if (response.ok) {
+      return { success: true };
+    } else {
+      return { success: false, error: "Invalid OTP ❌" };
+    }
+  } catch (error) {
+    console.error("Error verifying OTP:", error);
+    return { success: false, error: "Something went wrong, please try again!" };
+  }
+};
+
+
+

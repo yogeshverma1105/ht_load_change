@@ -1,83 +1,105 @@
+
 import './login.css';
 import * as yup from "yup";
 import React, { useState } from "react";
-import { useNavigate,useLocation } from "react-router-dom";
-import { extractFormValues } from '../../utils/extractFormValues.js';
-import { submitFormData,submitFormDataUsingQuery } from '../../utils/handlePostApi.js';
+import { useNavigate, useLocation } from "react-router-dom";
+import { submitFormData, submitFormDataUsingQuery } from '../../utils/handlePostApi.js';
 import { useDispatch } from 'react-redux';
-import { setOfficerData,setLoginUser, setLoading, setError } from '../../redux/slices/userSlice.js';
+import { setOfficerData, setLoginUser, setLoading, setError as setReduxError } from '../../redux/slices/userSlice.js';
+import Cookies from 'js-cookie';
+import {HT_LOAD_CHANGE_BASE} from '../../api/api.js'
 
 const Login = ({ login_by, label }) => {
-  const [error, setError] = useState({});
+  const [errors, setErrors] = useState({});
   const [isDisabled, setIsDisabled] = useState(false);
   const navigate = useNavigate();
-    const dispatch = useDispatch();
-    const location = useLocation();
+  const dispatch = useDispatch();
+  const location = useLocation();
 
+  // ✅ Validation schema
   const schema = yup.object().shape({
-    employee_id: yup.string().required('Login ID is required'),
-    password: yup.string().required('Password is required'),
+    employee_id: yup.string().required("Login ID is required"),
+    password: yup.string().required("Password is required"),
   });
 
-  const extractFormValues = (formData) => {
-    const obj = {};
-    for (let [key, value] of formData.entries()) {
-      obj[key] = value;
-    }
-    return obj;
-  };
+  // ✅ Convert FormData to object
+  const extractFormValues = (formData) =>
+    Object.fromEntries(formData.entries());
 
-  const onSubmithandler = async (e) => {
+  // ✅ Form Submit
+  const onSubmitHandler = async (e) => {
     e.preventDefault();
     const formData = new FormData(e.target);
     const tempObj = extractFormValues(formData);
 
     try {
-      
+      // Validate inputs
       await schema.validate(tempObj, { abortEarly: false });
-      setError({});
+      setErrors({});
       setIsDisabled(true);
       dispatch(setLoading(true));
 
-    
-       if (location.pathname === `/department-login`) {
-      let  response = await submitFormData(formData,`/ht_load_change/officer-flags/`);
+      if (location.pathname === "/department-login") {
+        // Department login
+        const response = await submitFormData(formData, `${HT_LOAD_CHANGE_BASE}/officer-flags/`);
+        const result = await response.json();
+console.log(response.headers.get("authorization"))
+        const token = response.headers.get("Authorization");
+        if (token) {
+          const cleanToken = token.replace(/^Bearer\s+/i, "");
+          Cookies.set("accessToken", cleanToken, {
+            expires: 1,
+            secure: true,
+            sameSite: "Strict",
+            path: "/",
+          });
+
+          dispatch(setOfficerData(result));
+          navigate("/dashboard");
+        } else {
+          throw new Error("Authorization token missing");
+        }
+      } else {
+        // User login
+        const response = await submitFormDataUsingQuery(
+          tempObj,
+          `${HT_LOAD_CHANGE_BASE}/get-load-change-applications/?`
+        );
         const result = await response.json();
         console.log(result,"result")
-        dispatch(setOfficerData(result));
-       navigate('/dashboard',);
-      } else {
-        // dispatch && dispatch({ type: 'LOADING', payload: true }); // optional dispatch
-        let response = await submitFormDataUsingQuery(tempObj, '/ht_load_change/get-load-change-applications/?');
-        const result = await response.json(); 
         dispatch(setLoginUser(result));
         navigate(`/user-dashboard`);
       }
     } catch (err) {
       handleFormErrors(err);
-        dispatch(setError(error.message));
-        } finally {
-          dispatch(setLoading(false));
-        }
+      dispatch(setReduxError(err.message));
+    } finally {
+      dispatch(setLoading(false));
+      setIsDisabled(false);
+    }
   };
 
+ 
   const handleFormErrors = (err) => {
     const newErrors = {};
+
     if (err.inner && Array.isArray(err.inner)) {
       err.inner.forEach((error) => {
         newErrors[error.path] = error.message;
       });
-    } else if (err.path && err.message) {
-      newErrors[err.path] = err.message;
+    } else if (err.response) {
+      newErrors.general = err.response.data?.message || "Server error. Please try again.";
+    } else if (err.message) {
+      newErrors.general = err.message;
     } else {
-      newErrors.general = 'Something went wrong. Please try again.';
+      newErrors.general = "Something went wrong. Please try again.";
     }
-    setError(newErrors);
-    setIsDisabled(false);
+
+    setErrors(newErrors);
   };
 
   return (
-    <form onSubmit={onSubmithandler}>
+    <form onSubmit={onSubmitHandler}>
       <div className="flex items-center justify-center min-h-[464px] bg-gray-100 font-raleway">
         <div className="w-full max-w-lg bg-white shadow-md rounded-sm border-b-[10px] border-cyan-400 p-5">
           <div className="text-center mb-4">
@@ -92,8 +114,8 @@ const Login = ({ login_by, label }) => {
               name="employee_id"
               className="w-full border border-gray-300 rounded px-3 py-2 text-sm focus:outline-none focus:ring-1 focus:ring-purple-500"
             />
-            {error.employee_id && (
-              <span className="text-red-500 text-sm">{error.employee_id}</span>
+            {errors?.employee_id && (
+              <span className="text-red-500 text-sm">{errors.employee_id}</span>
             )}
           </div>
 
@@ -105,8 +127,8 @@ const Login = ({ login_by, label }) => {
               name="password"
               className="w-full border border-gray-300 rounded px-3 py-2 text-sm focus:outline-none focus:ring-1 focus:ring-purple-500"
             />
-            {error.password && (
-              <span className="text-red-500 text-sm">{error.password}</span>
+            {errors?.password && (
+              <span className="text-red-500 text-sm">{errors.password}</span>
             )}
           </div>
 
@@ -123,9 +145,10 @@ const Login = ({ login_by, label }) => {
             <button
               type="submit"
               disabled={isDisabled}
-              className="flex-1 bg-purple-700 text-white py-2 rounded uppercase text-sm font-semibold hover:bg-purple-800 transition"
+              className={`flex-1 py-2 rounded uppercase text-sm font-semibold transition
+                ${isDisabled ? "bg-gray-400 cursor-not-allowed" : "bg-purple-700 hover:bg-purple-800 text-white"}`}
             >
-              Login
+              {isDisabled ? "Please wait..." : "Login"}
             </button>
             <button
               type="button"
@@ -135,13 +158,10 @@ const Login = ({ login_by, label }) => {
             </button>
           </div>
 
-          {/* Already have account */}
-          <div className="text-center text-sm text-gray-700">
-            Do you have already account?{" "}
-            <a href="#" className="text-purple-700 hover:underline">
-              Login now
-            </a>
-          </div>
+          {/* General error */}
+          {errors?.general && (
+            <div className="text-center text-sm text-red-500 mt-2">{errors.general}</div>
+          )}
         </div>
       </div>
     </form>

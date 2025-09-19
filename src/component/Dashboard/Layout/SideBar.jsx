@@ -1,3 +1,4 @@
+
 import React, { useState, useEffect } from 'react';
 
 const Sidebar = () => {
@@ -16,9 +17,9 @@ const Sidebar = () => {
 
   return (
     <>
-      {isSidebarOpen && (
+      {/* {isSidebarOpen && (
         <div className="fixed inset-0 z-10 bg-black bg-opacity-20 lg:hidden"></div>
-      )}
+      )} */}
       <aside
         className={`fixed inset-y-0 z-10 flex flex-col w-64 max-h-screen overflow-hidden bg-white border-r shadow-lg transition-all transform lg:static lg:z-auto lg:shadow-none ${
           !isSidebarOpen ? '-translate-x-full lg:translate-x-0 lg:w-20' : ''
@@ -44,6 +45,16 @@ const Sidebar = () => {
                   </svg>
                 </span>
                 {isSidebarOpen && <span>Dashboard</span>}
+              </a>
+            </li>
+            <li>
+              <a href="#" className={`flex items-center p-2 space-x-2 rounded-md hover:bg-gray-100 ${!isSidebarOpen ? 'justify-center' : ''}`}>
+                <span>
+                  <svg className="w-6 h-6 text-gray-400" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M3 12l2-2m0 0l7-7 7 7M5 10v10a1 1 0 001 1h3m10-11l2 2m-2-2v10a1 1 0 01-1 1h-3m-6 0a1 1 0 001-1v-4a1 1 0 011-1h2a1 1 0 011 1v4a1 1 0 001 1m-6 0h6" />
+                  </svg>
+                </span>
+                {isSidebarOpen && <span>Download PDF</span>}
               </a>
             </li>
           </ul>

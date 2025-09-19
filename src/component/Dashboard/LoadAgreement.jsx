@@ -1,283 +1,421 @@
-import React, { useState } from 'react'
-import Input from '../Input'
-import SelectBox from '../SelectBox'
-import RadioButton from '../RadioButton'
-import{useParams} from "react-router-dom"
-import * as yup from 'yup';
-import{submitFormData} from "../../utils/handlePostApi.js"
-import { useSelector } from 'react-redux';
+import React, { useState } from "react";
+import { useSelector } from "react-redux";
+import { useLocation, useNavigate,Link } from "react-router-dom";
+import { useForm } from "react-hook-form";
+import Cookies from "js-cookie";
+import axios from "axios";
+import {
+  InputTag,
+  SelectTag,
+  ApplicantBasicDetails,
+  sendOtpNew,
+  verifyOtpNew
+} from "../importComponents.js";
+import { responseOption, revertOption } from "../newComponents/commonOption.js";
+import {HT_LOAD_CHANGE_BASE} from '../../api/api.js'
 
 const LoadAgreement = () => {
-  const officerData = useSelector(state => state.user.officerData);
+  const officerData = useSelector((state) => state.user.officerData);
+  const navigate = useNavigate();
+  const location = useLocation();
+  const { items } = location.state || {};
+  console.log(items,"items")
+const required = items?.survey?.is_estimate_required?.split(',') || [];
+
+  const token = Cookies.get("accessToken");
+
+  // States
+  const [mobileNo] = useState(officerData?.employee_detail.cug_mobile);
+  const [showOtpBtn, setShowOtpBtn] = useState(false);
+  const [formDataValue, setFormDataValue] = useState(null);
   const [isDisabled, setIsDisabled] = useState(false);
-  const [showButton, setShowButton] = useState(false);
-  const {id} = useParams();
-  const [error, setError] = useState({});
-  const newErrors = {};
+  const [isBtnDisabled, setBtnIsDisabled] = useState(false);
 
-  const loadSanctionOption = [
-    { label: "Accepted", value: "Accepted" },
-    { label: "Reverted", value: "Reverted" }
-
-  ]
-  const [formValues, setFormValues] = useState({
-    sanction_letter_no: "",
-    sanction_letter_date: "",
-    sanction_load_pdf: null, // file input
-    load_sanction_response: "",
-    accept_remark: "",
-    revert_reason: "",
-    revert_reason_remark: "",
-    upload_revert_docs: "",
-    is_required: "",
+  // Form
+  const {
+    register,
+    handleSubmit,
+    watch,
+    getValues,
+    setError,
+    clearErrors,
+    formState: { errors },
+  } = useForm({
+    defaultValues: items || {},
   });
-  const handleChange = (e) => {
-    const { name, value, type, checked, files } = e.target;
 
-    setFormValues((prevValues) => ({
-      ...prevValues,
-      [name]:
-        type === "checkbox" ? checked :
-          type === "file" ? files[0] :
-            type === "radio" ? value : // radio ke liye bhi value hi use hoti hai
-              value,
-    }));
-  };
-  const schema = yup.object().shape({
-      sanction_letter_no: yup.string().required('Sanction Letter No is Required '),
-      sanction_letter_date: yup.string().required('Sanction Letter Date is Required'),
-      accept_remark: yup.string().required('Accept Remark is Required'),
-      load_sanction_response: yup.string().required('Places Select Option'),
-      revert_reason: yup.string().when('load_sanction_response', {
-      is: 'Reverted',
-      then: (schema) => schema.required('Revert Reason is Required'),
-      otherwise: (schema) => schema.notRequired()
-    }),
+  const agreement_response = watch("agreement_response");
 
-  revert_reason_remark: yup.string().when('load_sanction_response', {
-    is: 'Reverted',
-    then: (schema) => schema.required('Revert Reason Remark is Required'),
-    otherwise: (schema) => schema.notRequired()
-  }),
-      sanction_load_pdf: yup
-          .mixed()
-          .required('File is required')
-          .test(
-            'fileSize',
-            'File size is too large (max 2MB)',
-            value => value && value.size <= 2 * 1024 * 1024
-          )
-          .test(
-            'fileType',
-            'Unsupported File Format. Only PDF is allowed.',
-            value => value && value.type === 'application/pdf'
-          ),
-      // upload_revert_docs: yup.mixed().required('File is required').test(
-      //       'fileSize',
-      //       'File size is too large',
-      //       value => value && value.size <= 2 * 1024 * 1024 // 2MB
-      //     )
-      //     .test(
-      //       'fileType',
-      //       'Unsupported File Format',
-      //       value => value && ['.pdf'].includes(value.type)
-      //     )
-    });
-  const onSubmithandler = async e => {
-    e.preventDefault();
-    const formData = new FormData(e.target)
-    console.log(formData,"formData")
-    const plainData = Object.fromEntries(formData.entries());
-    console.log(plainData,"plainData")
-    
-     try {
-            await schema.validate(plainData, { abortEarly: false });
-            setError({});
-            setIsDisabled(true);
-            const response = await submitFormData(formData,`/ht_load_change/api/load-sanctions/create/`);
-            console.log(response, "dhsjhfdgfhgdh")
-            const result = await response.json();
-            console.log('result', result);
-            // navigate(`/ht-load-change/Details`);
-          } catch (err) {
-            handleFormErrors(err);
-          }
-
-
-  }
-    const handleFormErrors = err => {
-    const newErrors = {};
-    if (err.inner && Array.isArray(err.inner)) {
-      err.inner.forEach(error => {
-        newErrors[error.path] = error.message;
-      });
-    } else if (err.path && err.message) {
-      newErrors[err.path] = err.message;
+  // 🔹 Send OTP
+  const handleSendOtp = async (formData) => {
+    setFormDataValue(formData);
+    const sentOtp = await sendOtpNew(mobileNo);
+    if (sentOtp.success) {
+      setShowOtpBtn(true);
+      setIsDisabled(true);
+      setError("otpSuccess", { type: "manual", message: sentOtp.message });
     } else {
-      newErrors.general = 'Something went wrong. Please try again.';
+      setError("otpStatus", { type: "manual", message: sentOtp.message });
     }
-    setError(newErrors);
-    setIsDisabled(false);
   };
+
+  // 🔹 Verify OTP
+  const handleVerifyOtp = async () => {
+    const otpValue = getValues("otp");
+    setBtnIsDisabled(true);
+    const verifyOtpResponse = await verifyOtpNew(mobileNo, otpValue);
+
+    if (verifyOtpResponse.success) {
+      handleFinalSubmit();
+    } else {
+      setError("otp", { type: "manual", message: verifyOtpResponse.error });
+      setBtnIsDisabled(false);
+    }
+  };
+
+  // 🔹 Resend OTP
+  const handleReSendOtp = async () => {
+    clearErrors("otpSuccess");
+    const sentOtp = await sendOtpNew(mobileNo);
+    setShowOtpBtn(true);
+
+    if (sentOtp.success) {
+      setError("otpSuccess", {
+        type: "manual",
+        message: `OTP Resent successfully to ****${mobileNo.slice(-4)}`,
+      });
+    } else {
+      setError("otp", {
+        type: "manual",
+        message: `Failed to send OTP on ****${mobileNo.slice(-4)}`,
+      });
+    }
+  };
+
+  // 🔹 Final Submit API Call
+  const handleFinalSubmit = async () => {
+    try {
+      const formValue = formDataValue;
+      const formData = new FormData();
+
+      Object.keys(formValue).forEach((key) => {
+        if (formValue[key] instanceof FileList && formValue[key].length > 0) {
+          formData.append(key, formValue[key][0]);
+        } else {
+          formData.append(key, formValue[key]);
+        }
+      });
+
+      const { data } = await axios.post(
+        `${HT_LOAD_CHANGE_BASE}/agreement-details/`,
+        formData,
+        {
+          headers: { Authorization: `Bearer ${token}` },
+        }
+      );
+
+      alert("Agreement And Work Order submitted successfully ✅");
+      navigate(`/dashboard/respones/${data.data.application}`, { state: data });
+    } catch (error) {
+      console.error("API Error:", error);
+      alert("Something went wrong ❌");
+    } finally {
+      setBtnIsDisabled(false);
+    }
+  };
+
   return (
     <>
-    <h2 className="text-base/7 font-semibold text-gray-900 bg-gray-300 p-3 rounded-md border-gray shadow-md">
-              HT Load Change Agreement Finalization
-            </h2>
-    <div className="mt-6 overflow-x-auto">
-      <form onSubmit={onSubmithandler}>
-        <div className="body p-4">
-          <div className="border-b border-gray-900/10 pb-12">
-            <div className="mt-10 grid grid-cols-1 gap-x-6 gap-y-8 sm:grid-cols-6">
-              <input type='hidden' name='application_id' value={id}></input>
-              <input type='hidden' name='employee_id' value={officerData.employee_detail.employee_login_id}></input>
-              <SelectBox
-                LName="Load Acceptance"
-                Iname="load_sanction_response"
-                optionVal={loadSanctionOption}
-                value={formValues.load_sanction_response}
-                onChange={handleChange}
-                errorMsg={error.load_sanction_response}
-                disabled={isDisabled}
-              />
-              {formValues.load_sanction_response === "Accepted" && (
-                <>
-                  <Input
-                    LName="Sanction Letter No"
-                    Iname="sanction_letter_no"
-                    value={formValues.sanction_letter_no}
-                    onChange={handleChange}
-                    placeholder="please Enter Sanction Letter No"
-                    errorMsg={error.sanction_letter_no}
-                    disabled={isDisabled}
-                  />
-                  <Input
-                    LName="Sanction Letter Date"
-                    Iname="sanction_letter_date"
-                    type="date"
-                    value={formValues.sanction_letter_date}
-                    onChange={handleChange}
-                    placeholder="please Enter Sanction Letter No"
-                    errorMsg={error.sanction_letter_date}
-                    disabled={isDisabled}
-                  />
-                  <Input
-                    LName="Upload Sanction Letter "
-                    Iname="sanction_load_pdf"
-                    type="file"
-                    onChange={handleChange}
-                    placeholder="please Enter Sanction Letter No"
-                    errorMsg={error.sanction_load_pdf}
-                    disabled={isDisabled}
-                  />
-                  <Input
-                    LName="Accept Remark"
-                    Iname="accept_remark"
-                    type="text"
-                    value={formValues.accept_remark}
-                    onChange={handleChange}
-                    placeholder="please Enter Accept Remark"
-                    errorMsg={error.accept_remark}
-                    disabled={isDisabled}
-                  />
-                  <RadioButton
-                    LName="Survey is Required"
-                    Iname="is_required"
-                    value="is_survey_required"
-                    onChange={handleChange}
-                    errorMsg={error.is_required}
-                    disabled={isDisabled} />
-                  <RadioButton
-                    LName="Agreement is Required"
-                    Iname="is_required"
-                    value='is_agreement_required'
-                    onChange={handleChange}
-                    errorMsg={error.is_required}
-                    disabled={isDisabled} />
-                  {formValues.is_required === "is_agreement_required" && (
-                    <Input
-                      LName="Upload Agreement Letter "
-                      Iname="agreement_letter"
-                      type="file"
-                      value={formValues.agreement_letter}
-                      onChange={handleChange}
-                      placeholder="please Enter Upload Agreement Letter"
-                      errorMsg={error.agreement_letter}
-                      disabled={isDisabled}
-                    />
+      <h2 className="text-base font-semibold text-gray-900 bg-gray-300 p-3 rounded-md shadow-md">
+        HT Load Change Agreement Finalization
+      </h2>
 
+      <div className="mt-6 overflow-x-auto">
+        {/* ✅ Yahan handleSubmit correctly laga hua hai */}
+        <form onSubmit={handleSubmit(handleSendOtp)}>
+          <div className="body p-4">
+            <ApplicantBasicDetails
+              htConsumers={items}
+              register={register}
+              errors={errors}
+            />
+
+            {officerData?.employee_detail.role == 3 && (
+              <>
+                <input
+                  type="hidden"
+                  value={items?.id}
+                  {...register("application")}
+                />
+                <div className="border-b border-gray-900/10 pb-12">
+                  <div className="mt-10 grid grid-cols-1 gap-x-6 gap-y-8 sm:grid-cols-6">
+                <Link className="rounded-lg  px-3 py-2 text-center text-green-100 bg-indigo-500 hover:bg-fuchsia-500 duration-300">
+                      View Registration invoice
+                  </Link>
+                <Link className="rounded-lg  px-3 py-2 text-center text-green-100 bg-indigo-500 hover:bg-fuchsia-500 duration-300">
+                      View Supply Affording Charges invoice
+                  </Link>
+                <Link className="rounded-lg  px-3 py-2 text-center text-green-100 bg-indigo-500 hover:bg-fuchsia-500 duration-300">
+                      View Security Deposit (SD) invoice
+                  </Link>
+
+                   {required==="is_estimate_required" &&(
+                    <Link className="rounded-lg  px-3 py-2 text-center text-green-100 bg-indigo-500 hover:bg-fuchsia-500 duration-300">
+                      View Demand Note invoice
+                    </Link>
+                     )} 
+                  {required?.includes('is_me_meter_required')&&(
+                    <Link className="rounded-lg  px-3 py-2 text-center text-green-100 bg-indigo-500 hover:bg-fuchsia-500 duration-300">
+                      View ME Estimate invoice
+                    </Link>
+                   )}
+                   {required?.includes('is_extension_work_required')&&(
+                    <Link className="rounded-lg  px-3 py-2 text-center text-green-100 bg-indigo-500 hover:bg-fuchsia-500 duration-300">
+                      View Extension Work Estimate invoice
+                    </Link>
+                   )}
+                  
+                </div>
+                </div>
+                <div className="border-b border-gray-900/10 pb-12">
+                  <div className="mt-10 grid grid-cols-1 gap-x-6 gap-y-8 sm:grid-cols-6">
+                  <SelectTag
+                    LName="Acceptance"
+                    options={responseOption}
+                    {...register("agreement_response", {
+                      required: "Please Select Acceptance",
+                    })}
+                    errorMsg={errors.agreement_response?.message}
+                    labelKey="label"
+                    valueKey="value"
+                    disabled={isDisabled}
+                  />
+
+                  {/* Accepted Case */}
+                  {agreement_response === "Accepted" && (
+                    <>
+                      <InputTag
+                        LName="Agreement No."
+                        placeholder="Enter Agreement No."
+                        {...register("agreement_no", {
+                          required: "Agreement No is required",
+                        })}
+                        errorMsg={errors.agreement_no?.message}
+                        disabled={isDisabled}
+                      />
+                      <InputTag
+                        LName="Agreement Effective Date"
+                        type="date"
+                        {...register("agreement_effective_date", {
+                          
+                          required: "Effective Date is required",
+                        })}
+                        errorMsg={errors.agreement_effective_date?.message}
+                        disabled={isDisabled}
+                      />
+                      <InputTag
+                        LName="Final Agreement Letter"
+                        type="file"
+                        {...register("agreement_doc", {
+                          required: "Agreement Letter is required",
+                        })}
+                        errorMsg={errors.agreement_doc?.message}
+                        disabled={isDisabled}
+                      />
+
+                      {required?.includes('is_extension_work_required') && (<>
+                      <InputTag
+                        LName="Extension Work Order No."
+                        placeholder="Enter Extension Work Order No."
+                        {...register("ex_work_order_no", {
+                          required:  " Extension Work Order No is required",
+                        })}
+                        errorMsg={errors.ex_work_order_no?.message}
+                        disabled={isDisabled}
+                      />
+                      <InputTag
+                        LName= " Extension Work Order Date"
+                        type="date"
+                        {...register("ex_work_order_date", {
+                          required:  " Extension Work Order Date is required",
+                        })}
+                        errorMsg={errors.ex_work_order_date?.message}
+                        disabled={isDisabled}
+                      />
+                      <InputTag
+                        LName= "Extension Work Order Letter"
+                        type="file"
+                        {...register("ex_work_order_docs", {
+                          required:  " Extension Work Order Letter is required",
+                        })}
+                        errorMsg={errors.ex_work_order_docs?.message}
+                        disabled={isDisabled}
+                      />
+                      </>
+                    )}
+                    {required.includes('is_me_meter_required') && (<>
+                      <InputTag
+                        LName="ME Meter Work Order No."
+                        placeholder="Enter ME Meter Work Order No."
+                        {...register("me_meter_work_order_no", {
+                          required: "ME Meter Work Order No is required",
+                        })}
+                        errorMsg={errors.me_meter_work_order_no?.message}
+                        disabled={isDisabled}
+                      />
+                      <InputTag
+                        LName="ME Meter Work Order Date"
+                        type="date"
+                        {...register("me_meter_work_order_date", {
+                          required: "ME Meter Work Order Date is required",
+                        })}
+                        errorMsg={errors.me_meter_work_order_date?.message}
+                        disabled={isDisabled}
+                      />
+                      <InputTag
+                        LName="ME Meter Work Order Letter"
+                        type="file"
+                        {...register("me_meter_work_order_docs", {
+                          required: "ME Meter Work Order Letter is required",
+                        })}
+                        errorMsg={errors.me_meter_work_order_docs?.message}
+                        disabled={isDisabled}
+                      />
+                      </>
+                    )}
+                      
+                      {(items?.load_sanction?.is_required === "is_agreement_required" || items?.survey?.is_required==="is_agreement_required") && items?.type_of_change === "Load_Enhancement" && (
+                        <InputTag
+                        LName="Upload Commissioning Permission letter"
+                       type="file"
+                        {...register("commissioning_permission_docs", {
+                          required: "Commissioning Permission letter is required",
+                        })}
+                        errorMsg={errors.commissioning_permission_docs?.message}
+                        disabled={isDisabled}
+                      />
+                      )}
+                      
+                    </>
                   )}
 
-                </>
+                  {/* Reverted Case */}
+                  {agreement_response === "Reverted" && (
+                    <>
+                      <SelectTag
+                        LName="Revert Reason"
+                        options={revertOption}
+                        {...register("revert_reason", {
+                          required: "Revert Reason is required",
+                        })}
+                        errorMsg={errors.revert_reason?.message}
+                        labelKey="label"
+                        valueKey="value"
+                        disabled={isDisabled}
+                      />
+                      <InputTag
+                        LName="Revert Reason Remark"
+                        placeholder="Enter Remark"
+                        {...register("revert_reason_remark", {
+                          required: "Remark is required",
+                        })}
+                        errorMsg={errors.revert_reason_remark?.message}
+                        disabled={isDisabled}
+                      />
+                      <InputTag
+                        LName="Upload Revert Docs"
+                        type="file"
+                        {...register("upload_revert_docs", {
+                          required: "Revert Docs are required",
+                        })}
+                        errorMsg={errors.upload_revert_docs?.message}
+                        disabled={isDisabled}
+                      />
+                    </>
+                  )}
+                </div>
+                </div>
 
-              )}
+                 <div className="border-b border-gray-900/10 pb-12">
+                  <div className="mt-10 flex flex-col justify-center items-center">
+                    <div className="flex space-x-2 space-y-2 flex-wrap justify-center items-baseline">
+                      {!showOtpBtn ? (
+                        <>
+                          <button type="reset" className="px-4 py-2 bg-blue-500 text-white rounded-lg">
+                            Reset
+                          </button>
+                          <button
+                            type="submit" // ✅ Yeh important hai, warna handleSendOtp call nahi hota
+                            className={`px-4 py-2 rounded text-white ${
+                              isDisabled
+                                ? "bg-gray-400 cursor-not-allowed"
+                                : "bg-green-500 hover:bg-purple-800"
+                            }`}
+                            disabled={isDisabled}
+                          >
+                           {
+                            agreement_response === "Reverted"
+                              ? "Revert For Survey"
+                              : agreement_response === "Accepted" &&
+                                required?.includes("is_me_meter_required")
+                              ? "Send for Meter Issue"
+                              : agreement_response === "Accepted" &&
+                                (items?.load_sanction?.is_required === "is_agreement_required" ||
+                                  items?.survey?.is_required === "is_agreement_required") &&
+                                items?.type_of_change === "Load_Enhancement"
+                              ? "Send for BiCall"
+                              : "Send for Completion Certifying"
+                          }
+                          </button>
+                        </>
+                      ) : (
+                        <>
+                          <InputTag
+                            LName=""
+                            placeholder="Enter OTP"
+                            {...register("otp", { required: "Otp is required" })}
+                            errorMsg={errors.otp?.message}
+                          />
+                          <button
+                            type="button"
+                            onClick={handleVerifyOtp}
+                            className={`px-4 py-2 rounded text-white ${
+                              isBtnDisabled
+                                ? "bg-gray-400 cursor-not-allowed"
+                                : "bg-green-600 hover:bg-purple-800"
+                            }`}
+                            disabled={isBtnDisabled}
+                          >
+                            {isBtnDisabled ? "Please wait..." : "Verify OTP"}
+                          </button>
+                          <button
+                            type="button"
+                            onClick={handleReSendOtp}
+                            className="px-4 py-2 bg-emerald-600 text-white rounded"
+                          >
+                            Resend OTP
+                          </button>
+                        </>
+                      )}
 
-              {formValues.load_sanction_response === "Reverted" && (
-                <>
-                  <Input
-                    LName="Revert Reason"
-                    Iname="revert_reason"
-                    type="text"
-                    value={formValues.revert_reason}
-                    onChange={handleChange}
-                    placeholder="please Enter Revert Reason"
-                    errorMsg={error.revert_reason}
-                    disabled={isDisabled}
-                  />
-                  <Input
-                    LName="Revert Reason Remark"
-                    Iname="revert_reason_remark"
-                    type="text"
-                    value={formValues.rejection_revert_remark}
-                    onChange={handleChange}
-                    placeholder="please Enter Revert Reason Remark"
-                    errorMsg={error.rejection_revert_remark}
-                    disabled={isDisabled}
-                  />
-                  <Input
-                    LName="upload_revert_docs"
-                    Iname="upload_revert_docs"
-                    type="file"
-                    onChange={handleChange}
-                    placeholder="please Enter Revert Reason Remark"
-                    errorMsg={error.rejection_revert_remark}
-                    disabled={isDisabled}
-                  />
-                </>
-
-              )}
-            </div>
+                      
+                      </div>
+                      {/* Error & Success messages */}
+                      {errors?.otpSuccess && (
+                        <p className="text-green-500 text-sm">{errors.otpSuccess.message}</p>
+                      )}
+                      {errors?.otpStatus && (
+                        <p className="text-red-500 text-sm">{errors.otpStatus.message}</p>
+                      )}
+                    </div>
+                </div>
+              </>
+            )}
           </div>
-
-          <div className="border-b border-gray-900/10 pb-12 ">
-            <div className="mt-10 flex flex-col justify-center items-center">
-              <div className="flex space-x-2 space-y-2 flex-wrap justify-center items-baseline">
-                <button class="rounded-lg px-4 py-2 bg-blue-500 text-blue-100 hover:bg-red-600 duration-300">
-                  Reset
-                </button>
-                {formValues.load_sanction_response === "Reverted" ? (
-                  <button
-                    type="submit"
-                    className="rounded-lg px-4 py-2 bg-red-700 text-green-100 hover:bg-green-800 duration-300"
-                  >
-                    Revert
-                  </button>
-                ) : formValues.is_required === "is_agreement_required" ? (
-                  <button type="submit" className="bg-orange-500  text-white px-4 py-2 mt-4 rounded">
-                    Send for Agreement
-                  </button>
-                ) : (
-                  <button type="submit" className="bg-emerald-600 text-white px-4 py-2 mt-4 rounded">
-                    Send for Survey
-                  </button>
-                )}
-              </div>
-            </div>
-          </div>
-        </div>
-      </form>
+        </form>
       </div>
     </>
-  )
-}
-export default LoadAgreement
+  );
+};
+
+export default LoadAgreement;

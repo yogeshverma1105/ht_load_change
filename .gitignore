@@ -6,10 +6,14 @@ yarn-debug.log*
 yarn-error.log*
 pnpm-debug.log*
 lerna-debug.log*
+.zip
 
 node_modules
 dist
 dist-ssr
+.env.development
+.env.production
+.env.uat
 *.local
 
 # Editor directories and files
