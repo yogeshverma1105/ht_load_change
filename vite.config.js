@@ -13,18 +13,44 @@ export default defineConfig({
         changeOrigin: true,
         secure: false, // if SSL is self-signed
       },
-
-      // 2. Proxy for: https://htsanyojanuat.mpcz.in:8088/ht_load_change/*
-      '/ht_load_change': {
+      '/media': {
         target: 'https://htsanyojanuat.mpcz.in:8088',
         changeOrigin: true,
         secure: false,
       },
-      '/htngb_backend': {
+      '/ht_load_change': {
+        target: 'https://htsanyojanuat.mpcz.in:8088/',
+        changeOrigin: true,
+        secure: false,
+      },
+       '/htngb_backend': {
         target: 'https://uathtngb.mpcz.in:8888',
         changeOrigin: true,
         secure: false,
       }
+      ,
+       '/htngb_backend/api': {
+        target: 'https://ht.mpcz.in',
+        changeOrigin: true,
+        secure: false,
+      }
+      ,
+       '/newerp': {
+        target: 'https://dsp.mpcz.in:8888/',
+        changeOrigin: true,
+        secure: false,
+      },
+       '/tkc': {
+        target: 'https://qcportal.mpcz.in',
+        changeOrigin: true,
+        secure: false,
+      },
+      // tkc/get_tkc_category
+      // tkc/get_tkc_by_oyt/${contractor_category_id}
+      // tkc/get_reg_date/${Contractor_name_id}`
+      
     }
   },
 })
+
+// https://uathtngb.mpcz.in:8888/htngb_backend/api/masters/getHtSdCalculationDetail/HV-3.1.B

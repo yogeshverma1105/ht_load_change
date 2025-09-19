@@ -13,14 +13,26 @@ import BillDeskPayment from './component/BillDesk/BillDeskPayment';
 import DashboardLayout from './component/Dashboard/DashboardLayout';
 import ApplicationStatus from './component/Dashboard/ApplicationStatus';
 import ApplicantStatus from './component/Dashboard/UserDashboard/ApplicantStatus';
-import TrackApplicationStatus from './component/loadChange/TrackApplicationStatus';
+// import TrackApplicationStatus from './component/loadChange/TrackApplicationStatus';
 import Login from './component/Login/Login';
 import PaddingApplication from './component/Dashboard/PaddingApplication';
 import ApplicantPaddingApplication from './component/Dashboard/UserDashboard/ApplicantPaddingApplication';
 import LoadSanction from './component/Dashboard/LoadSanction';
 import LoadSurvey from './component/Dashboard/LoadSurvey';
+import LoadDemandNote from './component/Dashboard/LoadDemandNote';
 import LoadAgreement from './component/Dashboard/LoadAgreement';
 import LoadChangeInstruction from './component/loadChange/LoadChangeInstruction';
+import SuccessRespones from './component/newComponents/SuccessRespones';
+
+
+import LoadCommissioningPermission from "./component/Dashboard/LoadCommissioningPermission"
+import LoadCommissioning from "./component/Dashboard/LoadCommissioning"
+import LoadDemandNotePayment from './component/Dashboard/UserDashboard/LoadDemandNotePayment';
+
+import {TrackApplicationStatus,LoadRegistrationFeePayment,LoadResubmission,RegistrationPayment,LoadConnectionServed,
+  LoadWorkCompletionAndMeterIssuing
+} from "./component/importComponents"
+
 
 function App() {
   return (
@@ -52,27 +64,45 @@ function App() {
               element={<Login login_by="Applicant" label="Application No" />}
             />
             <Route
+              path="/track-application"
+              element={<TrackApplicationStatus/>}
+            />
+            <Route
               path="ht-load-change/track_application_status"
               element={<TrackApplicationStatus />}
             />
+            <Route path="ht-load-change/payment/:id" element={<RegistrationPayment />}/>
           </Route>
           {/* 🆕 Dashboard routes */}
           <Route path="/dashboard" element={<DashboardLayout />}>
             <Route index element={<ApplicationStatus />} />
             <Route path="/dashboard/padding_application" element={<PaddingApplication />} />
+            <Route path="/dashboard/pending_for_registration_fee_payment/:id" element={<LoadRegistrationFeePayment />} />
+            <Route path="/dashboard/pending_for_application_resubmission/:id" element={<LoadResubmission />} />
             <Route path="/dashboard/pending_for_load_sanction/:id" element={<LoadSanction />} />
             <Route path="/dashboard/pending_for_survey/:id" element={<LoadSurvey />} />
-            <Route
-              path="/dashboard/pending_for_agreement_finalization/:id"
-              element={<LoadAgreement />}
-            />
+            <Route path="/dashboard/pending_for_agreement_finalization/:id" element={<LoadAgreement />}/>
+            <Route path="/dashboard/pending_for_second_demand_note_generation/:id" element={<LoadDemandNote />}/>
+            <Route path="/dashboard/pending_for_demand_note_payment/:id" element={<LoadDemandNotePayment />}/>
+
+            <Route path="/dashboard/pending_for_work_completion_certifying_&_issuing_of_meter/:id" element={<LoadWorkCompletionAndMeterIssuing />}/>
+
+            <Route path="/dashboard/pending_for_commissioning_permission/:id" element={<LoadCommissioningPermission />}/>
+            <Route path="/dashboard/pending_for_commissioning/:id" element={<LoadCommissioning />}/>
+            <Route path="/dashboard/connection_served/:id" element={<LoadConnectionServed />}/>
+
+            <Route path="/dashboard/success_respones" element={<SuccessRespones />}/>
+            <Route path="/dashboard/respones/:id" element={<SuccessRespones />}/>
           </Route>
           <Route path="/user-dashboard" element={<DashboardLayout />}>
             <Route index element={<ApplicantStatus />} />
-            <Route
+            <Route path="/user-dashboard/pending_for_registration_fee_payment/:id" element={<LoadRegistrationFeePayment />}/>
+            <Route path="/user-dashboard/pending_for_application_resubmission/:id" element={<LoadResubmission />}/>
+            <Route path="/user-dashboard/pending_for_demand_note_payment/:id" element={<LoadDemandNotePayment />}/>
+            {/* <Route
               path="/user-dashboard/applicant-padding-application"
               element={<ApplicantPaddingApplication />}
-            />
+            /> */}
           </Route>
         </Routes>
       </BrowserRouter>

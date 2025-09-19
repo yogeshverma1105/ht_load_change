@@ -1,11 +1,16 @@
+
 import React, { use, useEffect, useState } from 'react'
 import { useLocation, NavLink, useParams } from "react-router-dom";
-import { getDataForPostApi } from '../../utils/handlePostApi.js'
+import { getDataForEmpToken } from '../../utils/handlePostApi.js'
+import {HT_LOAD_CHANGE_BASE} from '../../api/api.js'
+import Cookies from 'js-cookie'
 export default function PaddingApplication() {
   const [pendingApplication, setPendingApplication] = useState([])
   const [applicationStatusName, setApplicationStatusName] = useState([])
   const [statusUrl, setStatusUrl] = useState()
   const [currentPage,setCurrantPage] =useState(0)
+  const token = Cookies.get('accessToken')
+  console.log(token,"token")
 
 
   const location = useLocation();
@@ -18,13 +23,11 @@ export default function PaddingApplication() {
         employee_id: emp_id,
         flag_id: flag_id
       }
-      let response = await getDataForPostApi(formData, '/ht_load_change/get-applications-by-flag/')
+      let response = await getDataForEmpToken(formData, `${HT_LOAD_CHANGE_BASE}/get-applications-by-flag/`,token)
       let result = await response.json();
       setPendingApplication(result.applications)
-
       setApplicationStatusName(result.flag)
       setStatusUrl(result.flag.name.split(" ").join('_'))
-      console.log(statusUrl,"status_url")
 
 
     }
@@ -71,31 +74,39 @@ const goToNextPage = () => {
             </tr>
           </thead>
           <tbody className="bg-white divide-y divide-gray-200">
-            {pendingApplication.slice(Start , End).map((items, index) => (
-              <tr key={index} className="transition-all hover:bg-gray-100 hover:shadow-lg">
-                <td className="px-6 py-4 whitespace-nowrap">
-                  <div className="flex items-center">
-                    <div className="ml-4">
-                      <div className="text-sm font-medium text-gray-900">{items.application_no}</div>
-                      {/* <div className="text-sm text-gray-500">ahmed.kamel@example.com</div> */}
-                    </div>
-                  </div>
-                </td>
-                <td className="px-6 py-4 whitespace-nowrap">
-                  <div className="text-sm text-gray-900">{items.consumer_name}</div>
-                  {/* <div className="text-sm text-gray-500">Optimization</div> */}
-                </td>
-                <td className="px-6 py-4 whitespace-nowrap">
-                  <span className="inline-flex px-2 text-xs font-semibold text-green-800 bg-green-100 rounded-full">{items.circle}</span>
-                </td>
-                <td className="px-6 py-4 text-sm text-gray-500 whitespace-nowrap">{items.division}</td>
-                <td className="px-6 py-4 text-sm text-gray-500 whitespace-nowrap">{items.type_of_change}</td>
-                <td className="px-6 py-4 text-sm text-gray-500 whitespace-nowrap">{items.lc_type}</td>
-                <td className="px-6 py-4 text-sm font-medium text-right whitespace-nowrap">
-                  <NavLink to={`/dashboard/${statusUrl}/${items.id}`} className="text-indigo-600 hover:text-indigo-900">Edit</NavLink>
-                </td>
-              </tr>
-            ))}
+              {pendingApplication.slice(Start, End).length > 0 ? (
+                pendingApplication.slice(Start, End).map((items, index) => (
+                  <tr key={index} className="transition-all hover:bg-gray-100 hover:shadow-lg">
+                    <td className="px-6 py-4 whitespace-nowrap">
+                      <div className="flex items-center">
+                        <div className="ml-4">
+                          <div className="text-sm font-medium text-gray-900">{items.application_no}</div>
+                        </div>
+                      </div>
+                    </td>
+                    <td className="px-6 py-4 whitespace-nowrap">
+                      <div className="text-sm text-gray-900">{items.consumer_name}</div>
+                    </td>
+                    <td className="px-6 py-4 whitespace-nowrap">
+                      <span className="inline-flex px-2 text-xs font-semibold text-green-800 bg-green-100 rounded-full">{items.circle}</span>
+                    </td>
+                    <td className="px-6 py-4 text-sm text-gray-500 whitespace-nowrap">{items.division}</td>
+                    <td className="px-6 py-4 text-sm text-gray-500 whitespace-nowrap">{items.type_of_change}</td>
+                    <td className="px-6 py-4 text-sm text-gray-500 whitespace-nowrap">{items.lc_type}</td>
+                    <td className="px-6 py-4 text-sm font-medium text-left whitespace-nowrap">
+                      <NavLink to={{pathname: `/dashboard/${statusUrl}/${items.id}`,}}state={{ items }}>
+                        <button  className="border-purple-200 text-purple-600 hover:border-transparent hover:bg-purple-600 hover:text-white active:bg-purple-700">View Application</button>
+                      </NavLink>
+                    </td>
+                  </tr>
+                ))
+              ) : (
+                <tr>
+                  <td colSpan="7" className="px-6 py-4 text-center text-gray-500">
+                    No data found.
+                  </td>
+                </tr>
+              )}
           </tbody>
         </table>
       </div>
@@ -104,9 +115,9 @@ const goToNextPage = () => {
 
 
 <nav aria-label="Page navigation example">
-  <ul class="inline-flex -space-x-px text-base h-10">
+  <ul className="inline-flex -space-x-px text-base h-10">
     <li>
-      <button disabled={currentPage === 0} onClick={()=>goToPrevPage()} class="flex items-center justify-center px-4 h-10 ms-0 leading-tight text-gray-500 bg-white border border-e-0 border-gray-300 rounded-s-lg hover:bg-gray-100 hover:text-gray-700 dark:bg-gray-800 dark:border-gray-700 dark:text-gray-400 dark:hover:bg-gray-700 dark:hover:text-white">Previous</button>
+      <button disabled={currentPage === 0} onClick={()=>goToPrevPage()} className="flex items-center justify-center px-4 h-10 ms-0 leading-tight text-gray-500 bg-white border border-e-0 border-gray-300 rounded-s-lg hover:bg-gray-100 hover:text-gray-700 dark:bg-gray-800 dark:border-gray-700 dark:text-gray-400 dark:hover:bg-gray-700 dark:hover:text-white">Previous</button>
     </li>
     {[...Array(numOfPages).keys()].map(n=>(
     <li key={n}>
@@ -130,3 +141,4 @@ const goToNextPage = () => {
     </>
   )
 }
+

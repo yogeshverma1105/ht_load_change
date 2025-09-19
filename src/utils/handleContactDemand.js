@@ -14,17 +14,34 @@ export const validateVoltageRange = (voltage, value) => {
   return '';
 };
 
-export const validateDemandLogic = (type, value, current, typesOfChangeValue) => {
+
+export const validateDemandLogic = (type, value, current, typesOfChangeValue,htConsumers,totalYearConnectionDate,totalYearLastReductionDate) => {
   if (type === 'Load_Enhancement') {
-    if (value < current || typesOfChangeValue !== 'Load_Enhancement_with_Downgrade_Voltage_Level') {
-      return `Contract demand cannot be less than current demand (${current} KVA)`;
-    } else {
-      return ``;
+    if(value < current){
+
     }
-  } else if (type === 'Load_Reduction') {
-    if (value > current) {
+
+
+
+    // if (value < current && typesOfChangeValue !== 'Load_Enhancement_with_Downgrade_Voltage_Level') {
+    //   return `Contract demand cannot be less than current demand (${current} KVA)`;
+    // } else {
+    //   return ``;
+    // }
+  }else if (type === 'Load_Reduction') {
+    if (value < current) {
+      const contractDemand = Math.floor(current / 2);
+
+      if (
+        totalYearConnectionDate < 2 &&
+        !htConsumers?.last_reduction_date &&
+        contractDemand > value
+      ) {
+        return `The connection has not completed two years yet ${current} KVA)`;
+      }
+    } else {
       return `Contract demand cannot be greater than current demand (${current} KVA)`;
     }
   }
-  return '';
-};
+return '';
+}

@@ -4,7 +4,7 @@ import SelectBox from '../../component/SelectBox';
 import ApplicantBasicDetails from '../ApplicantBasicDetails';
 import * as yup from 'yup';
 import { useNavigate } from 'react-router-dom';
-import { dropdownOptions, supplyVoltageOption } from '../../utils/supplyVoltage.js';
+// import { dropdownOptions, supplyVoltageOption } from '../../utils/supplyVoltage.js';
 
 import { validateVoltageRange, validateDemandLogic } from '../../utils/handleContactDemand.js';
 import { extractFormValues } from '../../utils/extractFormValues.js';

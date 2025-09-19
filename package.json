@@ -5,7 +5,8 @@
   "type": "module",
   "scripts": {
     "dev": "vite",
-    "build": "vite build",
+   "build:uat": "vite build --mode uat",
+   "build:prod": "vite build --mode production",
     "lint": "eslint .",
     "preview": "vite preview",
     "format": "prettier --write \"src/**/*.{js,jsx,ts,tsx,json,css,scss,md}\""
@@ -13,21 +14,23 @@
   "dependencies": {
     "@headlessui/react": "^2.2.4",
     "@heroicons/react": "^2.2.0",
+    "@hookform/resolvers": "^5.2.1",
     "@reduxjs/toolkit": "^2.8.2",
     "@tailwindcss/vite": "^4.1.4",
-    "axios": "^1.10.0",
+    "axios": "^1.11.0",
     "flowbite-react": "^0.12.2",
     "formik": "^2.4.6",
+    "js-cookie": "^3.0.5",
     "react": "^18.3.1",
     "react-dom": "^18.3.1",
-    "react-hook-form": "^7.57.0",
+    "react-hook-form": "^7.62.0",
     "react-icons": "^5.5.0",
     "react-loader-spinner": "^6.1.6",
     "react-redux": "^9.2.0",
     "react-router-dom": "^7.5.0",
     "react-spinners": "^0.17.0",
     "tailwindcss": "^4.1.4",
-    "yup": "^1.6.1"
+    "yup": "^1.7.0"
   },
   "devDependencies": {
     "@eslint/js": "^9.21.0",

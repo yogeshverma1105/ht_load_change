@@ -1,18 +1,23 @@
  
-import React, { useRef, useEffect } from 'react';
+import React, { useRef, useEffect,useState } from 'react';
 import { useSelector } from 'react-redux';
 import { Link, NavLink } from 'react-router-dom';
 
 const ApplicantStatus = () => {
   const loadingRef = useRef();
-  // const officerData = useSelector(state => state.user.officerData);
-  // const userData = useSelector(state => state.user.userData);
+  const [statusUrl, setStatusUrl] = useState("")
   const loginUser = useSelector(state => state.user.loginUser);
-  // console.log(officerData,"officerData")
-  // console.log(userData,"userData")
-  console.log(loginUser,"loginUser")
-  let user =loginUser.data
+  console.log(loginUser,"userData")
+  let items =loginUser.data
+
   
+  
+
+    useEffect(() => {
+    if (items?.application_status_text) {
+      setStatusUrl(items.application_status_text.split(" ").join("_"));
+    }
+  }, [items?.application_status_text]); 
 
   useEffect(() => {
     if (loadingRef.current) {
@@ -31,7 +36,7 @@ const ApplicantStatus = () => {
       </div>
     
       <div className="h-8 bg-linear-to-r from-cyan-500 to-blue-500">
-          <h4 className="text-sm/6 text-black font-semibold whitespace-nowrap">Successfully login :{user.consumer_name}</h4>
+          <h4 className="text-sm/6 text-black font-semibold whitespace-nowrap">Successfully login :{items?.consumer_name}</h4>
       </div>
       <div className="mt-6 overflow-x-auto">
             <table className="min-w-full divide-y divide-gray-200">
@@ -50,24 +55,50 @@ const ApplicantStatus = () => {
                
                   <tr  className="transition-all hover:bg-gray-100 hover:shadow-lg">
                     <td className="px-6 py-4 whitespace-nowrap">
-                     {user.application_no}
+                     {items?.application_no}
                     </td>
                     <td className="px-6 py-4 whitespace-nowrap">
-                      <div className="text-sm text-gray-900">{user.consumer_name}</div>
+                      <div className="text-sm text-gray-900">{items?.consumer_name}</div>
                      
                     </td>
                     <td className="px-6 py-4 whitespace-nowrap">
-                      <span className="inline-flex px-2 text-xs font-semibold text-green-800 bg-green-100 rounded-full">{user.circle}</span>
+                      <span className="inline-flex px-2 text-xs font-semibold text-green-800 bg-green-100 rounded-full">{items?.circle}</span>
                     </td>
                     
-                    <td className="px-6 py-4 text-sm text-gray-500 whitespace-nowrap">{user.type_of_change}</td>
-                    <td className="px-6 py-4 text-sm text-gray-500 whitespace-nowrap">{user.lc_type}</td>
+                    <td className="px-6 py-4 text-sm text-gray-500 whitespace-nowrap">{items?.type_of_change}</td>
+                    <td className="px-6 py-4 text-sm text-gray-500 whitespace-nowrap">{items?.lc_type}</td>
                     <td className="px-6 py-4 whitespace-nowrap">
-                      <span className="inline-flex px-2 text-xs font-semibold text-green-800 bg-green-100 rounded-full">{user.application_status}</span>
+                      <span className="inline-flex px-2 text-xs font-semibold text-green-800 bg-green-100 rounded-full">{items?.application_status_text}</span>
                     </td>
-                    <td className="px-6 py-4  text-sm font-medium text-right whitespace-nowrap">
-                      <button className="bg-blue-500 text-indigo-600 hover:text-indigo-900 "> <NavLink to='/user-dashboard/applicant-padding-application' >View Application</NavLink></button>
+                    {items?.application_status === 1 ? (
+                       <td className="px-6 py-4  text-sm font-medium text-right whitespace-nowrap">
+                      <NavLink to={{pathname: `/user-dashboard/${statusUrl}/${items?.id}`,}}state={{ items }}
+                      >
+                        <button  className="border-purple-200 text-purple-600 hover:border-transparent hover:bg-purple-600 hover:text-white active:bg-purple-700">View Application</button></NavLink>
                     </td>
+                    ):items?.application_status === 2 ? (
+                       <td className="px-6 py-4  text-sm font-medium text-right whitespace-nowrap">
+                      <NavLink to={{pathname: `/user-dashboard/${statusUrl}/${items?.id}`,}}state={{ items }}
+                      >
+                        <button  className="border-purple-200 text-purple-600 hover:border-transparent hover:bg-purple-600 hover:text-white active:bg-purple-700">View Application</button></NavLink>
+                    </td>
+
+                    
+                    ):items?.application_status === 9 ? (
+                       <td className="px-6 py-4  text-sm font-medium text-right whitespace-nowrap">
+                      <NavLink to={{pathname: `/user-dashboard/${statusUrl}/${items?.id}`,}}state={{ items }}
+                      >
+                        <button  className="border-purple-200 text-purple-600 hover:border-transparent hover:bg-purple-600 hover:text-white active:bg-purple-700">View Application</button></NavLink>
+                    </td>
+
+                    ):(
+                      <td className="px-6 py-4  text-sm font-medium text-right whitespace-nowrap">
+                     
+                        <button  className="border-purple-200 text-purple-600 hover:border-transparent hover:bg-purple-600 hover:text-white active:bg-purple-700">View Application</button>
+                    </td>
+
+                    )}
+                   
                   </tr>
                
               </tbody>
